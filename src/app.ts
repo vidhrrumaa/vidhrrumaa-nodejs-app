@@ -47,6 +47,15 @@ app.use(compression());
 app.use(requestId);
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms', { stream: logger.stream }));
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: 'ok',
+    message: 'Vidhrrumaa API is running',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use('/api', apiLimiter);
 app.use('/api/v1', routes);
 

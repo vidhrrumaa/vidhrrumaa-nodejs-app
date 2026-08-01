@@ -19,12 +19,25 @@ function getTransporter(): Transporter {
     maxMessages: 100,
   });
 
+  logger.info('SMTP transport config', {
+    host: config.smtp.host,
+    port: config.smtp.port,
+    secure: config.smtp.secure,
+    user: config.smtp.auth.user,
+  });
+
   return transporter;
 }
 
 // Checked once at startup so a bad SMTP config is loud, not silent.
 async function verifyConnection(): Promise<boolean> {
   try {
+    logger.info('Starting SMTP verification', {
+      host: config.smtp.host,
+      port: config.smtp.port,
+      secure: config.smtp.secure,
+    });
+
     await getTransporter().verify();
     logger.info('SMTP transport verified and ready');
     return true;

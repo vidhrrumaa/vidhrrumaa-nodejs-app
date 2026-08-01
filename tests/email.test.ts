@@ -36,6 +36,12 @@ async function getToken(agent: ReturnType<typeof request.agent>): Promise<string
 }
 
 describe('Health', () => {
+  it('GET / returns ok for hosting probes', async () => {
+    const res = await request(app).get('/');
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+  });
+
   it('GET /api/v1/health returns ok', async () => {
     const res = await request(app).get('/api/v1/health');
     expect(res.status).toBe(200);
