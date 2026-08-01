@@ -3,12 +3,12 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 import Joi from 'joi';
 
-// .env.prod for NODE_ENV=production, .env.local for everything else
-// (development, test). Falls back to a plain ".env" if the expected file
-// isn't present, e.g. when a host injects env vars directly (GoDaddy cPanel).
-const envFile = process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.local';
-const envPath = path.resolve(process.cwd(), envFile);
-dotenv.config({ path: fs.existsSync(envPath) ? envPath : path.resolve(process.cwd(), '.env') });
+// Only load a local env file for local development runs.
+// Production must use the host-provided environment variables directly.
+if (process.env.NODE_ENV !== 'production') {
+  const envPath = path.resolve(process.cwd(), '.env.local');
+  dotenv.config({ path: envPath });
+}
 
 interface EnvVars {
   NODE_ENV: 'development' | 'production' | 'test';

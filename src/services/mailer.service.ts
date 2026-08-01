@@ -9,10 +9,13 @@ let transporter: Transporter | null = null;
 function getTransporter(): Transporter {
   if (transporter) return transporter;
 
+  const smtpPort = 465;
+  const smtpSecure = true;
+
   transporter = nodemailer.createTransport({
     host: config.smtp.host,
-    port: config.smtp.port,
-    secure: config.smtp.secure,
+    port: smtpPort,
+    secure: smtpSecure,
     auth: config.smtp.auth,
     pool: true,
     maxConnections: 5,
@@ -21,8 +24,8 @@ function getTransporter(): Transporter {
 
   logger.info('SMTP transport config', {
     host: config.smtp.host,
-    port: config.smtp.port,
-    secure: config.smtp.secure,
+    port: smtpPort,
+    secure: smtpSecure,
     user: config.smtp.auth.user,
   });
 
