@@ -16,14 +16,11 @@ interface EnvVars {
   CORS_ORIGINS: string;
   CSRF_SECRET: string;
   TRUST_PROXY: string;
-  SMTP_HOST: string;
-  SMTP_PORT: number;
-  SMTP_SECURE: boolean;
-  SMTP_USER: string;
-  SMTP_PASS: string;
   MAIL_FROM: string;
   MAIL_CONTACT_TO: string;
   MAIL_CAREERS_TO: string;
+  ZEPTO_MAIL_URL: string;
+  ZEPTO_MAIL_TOKEN: string;
   MAX_UPLOAD_MB: number;
   RATE_LIMIT_WINDOW_MIN: number;
   RATE_LIMIT_MAX: number;
@@ -48,15 +45,12 @@ const envSchema = Joi.object({
   // and secure cookies see the real client IP/protocol.
   TRUST_PROXY: Joi.string().default('1'),
 
-  SMTP_HOST: Joi.string().required(),
-  SMTP_PORT: Joi.number().default(587),
-  SMTP_SECURE: Joi.boolean().default(false), // true for port 465
-  SMTP_USER: Joi.string().required(),
-  SMTP_PASS: Joi.string().required(),
-
   MAIL_FROM: Joi.string().required(),
   MAIL_CONTACT_TO: Joi.string().required(),
   MAIL_CAREERS_TO: Joi.string().required(),
+
+  ZEPTO_MAIL_URL: Joi.string().uri().required(),
+  ZEPTO_MAIL_TOKEN: Joi.string().required(),
 
   MAX_UPLOAD_MB: Joi.number().default(5),
 
@@ -91,8 +85,8 @@ export interface Config {
   trustProxy: string;
   cors: { origins: string[] };
   csrf: { secret: string; cookieName: string; headerName: string };
-  smtp: { host: string; port: number; secure: boolean; auth: { user: string; pass: string } };
   mail: { from: string; contactTo: string; careersTo: string };
+  zeptoMail: { url: string; token: string };
   uploads: { maxBytes: number; maxMb: number };
   rateLimit: { windowMs: number; max: number; emailMax: number };
   turnstile: { secretKey: string };
@@ -115,17 +109,15 @@ const config: Config = {
     headerName: 'x-csrf-token',
   },
 
-  smtp: {
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT,
-    secure: env.SMTP_SECURE,
-    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-  },
-
   mail: {
     from: env.MAIL_FROM,
     contactTo: env.MAIL_CONTACT_TO,
     careersTo: env.MAIL_CAREERS_TO,
+  },
+
+  zeptoMail: {
+    url: env.ZEPTO_MAIL_URL,
+    token: env.ZEPTO_MAIL_TOKEN,
   },
 
   uploads: {

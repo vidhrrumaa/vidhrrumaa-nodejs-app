@@ -2,12 +2,11 @@
 process.env.NODE_ENV = 'test';
 process.env.CORS_ORIGINS = 'https://example.com';
 process.env.CSRF_SECRET = 'x'.repeat(48);
-process.env.SMTP_HOST = 'smtp.test';
-process.env.SMTP_USER = 'user';
-process.env.SMTP_PASS = 'pass';
 process.env.MAIL_FROM = 'Website <no-reply@example.com>';
 process.env.MAIL_CONTACT_TO = 'info@example.com';
 process.env.MAIL_CAREERS_TO = 'careers@example.com';
+process.env.ZEPTO_MAIL_URL = 'https://api.zeptomail.in/v1.1/email';
+process.env.ZEPTO_MAIL_TOKEN = 'test-token';
 process.env.TURNSTILE_SECRET_KEY = 'test-secret-key';
 
 // Mock the transport so no real emails are sent during tests.
