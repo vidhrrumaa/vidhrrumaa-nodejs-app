@@ -4,6 +4,7 @@ import Joi from 'joi';
 
 // Only load a local env file for local development runs.
 // Production must use the host-provided environment variables directly.
+console.log('[config] NODE_ENV:', process.env.NODE_ENV ?? 'undefined');
 if (process.env.NODE_ENV !== 'production') {
   const envPath = path.resolve(process.cwd(), '.env.local');
   dotenv.config({ path: envPath });

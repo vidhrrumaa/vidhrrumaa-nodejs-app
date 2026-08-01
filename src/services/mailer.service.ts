@@ -22,7 +22,7 @@ function getTransporter(): Transporter {
     maxMessages: 100,
   });
 
-  logger.info('SMTP transport config', {
+  logger.info('[DEBUG SMTP OVERRIDE] transport config', {
     host: config.smtp.host,
     port: smtpPort,
     secure: smtpSecure,
@@ -35,14 +35,14 @@ function getTransporter(): Transporter {
 // Checked once at startup so a bad SMTP config is loud, not silent.
 async function verifyConnection(): Promise<boolean> {
   try {
-    logger.info('Starting SMTP verification', {
+    logger.info('[DEBUG SMTP OVERRIDE] starting SMTP verification', {
       host: config.smtp.host,
       port: config.smtp.port,
       secure: config.smtp.secure,
     });
 
     await getTransporter().verify();
-    logger.info('SMTP transport verified and ready');
+    logger.info('[DEBUG SMTP OVERRIDE] transport verified and ready');
     return true;
   } catch (err) {
     const error = err as Error;
