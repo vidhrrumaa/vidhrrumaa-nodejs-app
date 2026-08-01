@@ -11,6 +11,7 @@ import logger from './config/logger';
 import requestId from './middleware/requestId.middleware';
 import { apiLimiter } from './middleware/rateLimiter.middleware';
 import { notFound, errorHandler } from './middleware/error.middleware';
+import { matchesKnownOrigin } from './middleware/originCheck.middleware';
 import routes from './routes';
 
 const app = express();
@@ -29,7 +30,7 @@ const corsOptions: cors.CorsOptions = {
     // headers, so browsers block reading the response - it still lets the
     // request reach route-level checks like requireKnownOrigin, which give
     // non-browser callers (curl/Postman) a clean 403 instead of a 500.
-    callback(null, !origin || config.cors.origins.includes(origin));
+    callback(null, !origin || matchesKnownOrigin(origin));
   },
   credentials: true,
   methods: ['GET', 'POST', 'OPTIONS'],

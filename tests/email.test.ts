@@ -29,8 +29,11 @@ import app from '../src/app';
 const ORIGIN = 'https://example.com';
 
 // Fetches a CSRF token; the agent's cookie jar keeps the cookie for later requests.
-async function getToken(agent: ReturnType<typeof request.agent>): Promise<string> {
-  const res = await agent.get('/api/v1/csrf-token').set('Origin', ORIGIN);
+async function getToken(
+  agent: ReturnType<typeof request.agent>,
+  origin: string = ORIGIN,
+): Promise<string> {
+  const res = await agent.get('/api/v1/csrf-token').set('Origin', origin);
   return res.body.csrfToken;
 }
 
@@ -49,6 +52,23 @@ describe('Health', () => {
 });
 
 describe('CSRF protection', () => {
+  it('accepts same-root-domain subdomains for the API workflow', async () => {
+    const agent = request.agent(app);
+    const token = await getToken(agent, 'https://foo.example.com');
+
+    const res = await agent
+      .post('/api/v1/email/contact')
+      .set('Origin', 'https://foo.example.com')
+      .set('x-csrf-token', token)
+      .field('fullName', 'Jane Doe')
+      .field('email', 'jane@x.com')
+      .field('message', 'Hello there, this is a test.')
+      .field('cf-turnstile-response', 'test-token');
+
+    expect(res.status).toBe(202);
+    expect(res.body.success).toBe(true);
+  });
+
   it('rejects POST /email/contact without a CSRF token', async () => {
     const res = await request(app)
       .post('/api/v1/email/contact')
