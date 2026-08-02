@@ -23,6 +23,12 @@ app.disable('x-powered-by');
 
 app.use(helmet());
 
+// Bump this string whenever you need to confirm a fresh publish actually
+// picked up new code - if this value isn't in the boot logs after a deploy,
+// the running process is still on the old build.
+const BUILD_MARKER = '2026-08-02-cors-debug-1';
+logger.info('Build marker', { BUILD_MARKER });
+
 // Log what CORS_ORIGINS actually parsed to at boot, since production reads
 // this straight from host-injected env vars (see config/index.ts) - if the
 // platform UI value differs from what you expect, it'll show up here.
@@ -53,7 +59,7 @@ app.use(hpp());
 app.use(compression());
 
 app.use(requestId);
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms', { stream: logger.stream }));
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms - origin=:req[origin]', { stream: logger.stream }));
 
 app.get('/', (req, res) => {
   res.status(200).json({

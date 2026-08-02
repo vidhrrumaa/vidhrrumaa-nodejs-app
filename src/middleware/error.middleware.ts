@@ -49,6 +49,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
     method: req.method,
     url: req.originalUrl,
     statusCode: error.statusCode,
+    origin: req.headers.origin ?? '(none)',
   };
 
   if (error.statusCode >= 500 || !error.isOperational) {
