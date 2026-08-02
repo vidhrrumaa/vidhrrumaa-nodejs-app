@@ -26,8 +26,8 @@ app.use(helmet());
 // Bump this string whenever you need to confirm a fresh publish actually
 // picked up new code - if this value isn't in the boot logs after a deploy,
 // the running process is still on the old build.
-const BUILD_MARKER = '2026-08-02-cors-debug-1';
-logger.info('Build marker', { BUILD_MARKER });
+const BUILD_MARKER = '2026-08-02-cors-debug-2';
+logger.info('Build marker', { BUILD_MARKER, bootTime: new Date().toISOString() });
 
 // Log what CORS_ORIGINS actually parsed to at boot, since production reads
 // this straight from host-injected env vars (see config/index.ts) - if the
@@ -70,6 +70,14 @@ app.get('/', (req, res) => {
   });
 });
 
+// API responses are per-request/per-session (CSRF tokens, cookies) and must
+// never be cached by the platform CDN or an intermediate proxy - a cached
+// copy can be replayed to a different origin/user without the CORS headers
+// or CSRF cookie that were valid for the original request.
+app.use('/api', (_req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 app.use('/api', apiLimiter);
 app.use('/api/v1', routes);
 
