@@ -1,8 +1,6 @@
 import express from 'express';
 import emailController from '../controllers/email.controller';
 import { validate } from '../middleware/validate.middleware';
-import { requireCsrf } from '../middleware/csrf.middleware';
-import { requireKnownOrigin } from '../middleware/originCheck.middleware';
 import { requireTurnstile } from '../middleware/turnstile.middleware';
 import { emailLimiter } from '../middleware/rateLimiter.middleware';
 import { singleUpload } from '../middleware/upload.middleware';
@@ -10,12 +8,14 @@ import { contactSchema, careerSchema } from '../validators/email.validator';
 
 const router = express.Router();
 
+// TEMP DEBUG: requireKnownOrigin and requireCsrf removed to isolate the CORS
+// edge header-stripping issue - these endpoints are CSRF-unprotected right
+// now. Must be restored before this ships to production.
+
 // Contact form. Attachment is optional (field: "attachment").
 router.post(
   '/contact',
   emailLimiter,
-  requireKnownOrigin,
-  requireCsrf,
   singleUpload('attachment'),
   requireTurnstile,
   validate(contactSchema),
@@ -26,8 +26,6 @@ router.post(
 router.post(
   '/careers',
   emailLimiter,
-  requireKnownOrigin,
-  requireCsrf,
   singleUpload('resume'),
   requireTurnstile,
   validate(careerSchema),
