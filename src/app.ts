@@ -25,7 +25,7 @@ app.use(helmet());
 // Bump this string whenever you need to confirm a fresh publish actually
 // picked up new code - if this value isn't in the boot logs after a deploy,
 // the running process is still on the old build.
-const BUILD_MARKER = '2026-08-02-cors-allow-all-test-2';
+const BUILD_MARKER = '2026-08-02-cors-allow-all-test-3';
 logger.info('Build marker', { BUILD_MARKER, bootTime: new Date().toISOString() });
 
 // Log what CORS_ORIGINS actually parsed to at boot, since production reads
@@ -40,10 +40,13 @@ logger.info('CORS allowed origins', { origins: config.cors.origins });
 // regardless of value. requireKnownOrigin still gates the actual routes, so
 // this alone does not open up the API to arbitrary origins.
 const corsOptions: cors.CorsOptions = {
+  /*
   origin(origin, callback) {
     logger.info('CORS check', { origin: origin ?? '(none)', allowed: true });
     callback(null, true);
   },
+  */
+  origin: config.cors.origins,
   credentials: true,
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', config.csrf.headerName, 'x-request-id'],
@@ -67,6 +70,33 @@ app.get('/', (req, res) => {
     message: 'Vidhrrumaa API is running',
     timestamp: new Date().toISOString(),
   });
+});
+
+// TEMP DEBUG: bypasses the `cors` package entirely and sets the
+// Access-Control-Allow-* headers by hand, so a curl/browser test against
+// this route rules out whether cors() itself is the problem vs. the GoDaddy
+// edge/proxy stripping these headers regardless of how they're produced.
+// Reflects the actual Origin (never "*") since credentials: true elsewhere
+// in the app means a wildcard origin would be invalid anyway. Remove once
+// the platform CORS issue is confirmed/resolved.
+app.all('/cors-debug', (req, res) => {
+  const origin = req.headers.origin;
+  logger.info('CORS debug (manual headers)', { origin: origin ?? '(none)', method: req.method });
+
+  res.header('Vary', 'Origin');
+  if (origin) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Headers', `Content-Type, ${config.csrf.headerName}, x-request-id`);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+
+  res.status(200).json({ message: 'cors-debug reached', origin: origin ?? null, method: req.method });
 });
 
 // API responses are per-request/per-session (CSRF tokens, cookies) and must
