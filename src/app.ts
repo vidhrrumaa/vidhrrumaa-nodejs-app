@@ -25,7 +25,7 @@ app.use(helmet());
 // Bump this string whenever you need to confirm a fresh publish actually
 // picked up new code - if this value isn't in the boot logs after a deploy,
 // the running process is still on the old build.
-const BUILD_MARKER = '2026-08-02-cors-allow-all-test';
+const BUILD_MARKER = '2026-08-02-cors-allow-all-test-2';
 logger.info('Build marker', { BUILD_MARKER, bootTime: new Date().toISOString() });
 
 // Log what CORS_ORIGINS actually parsed to at boot, since production reads
