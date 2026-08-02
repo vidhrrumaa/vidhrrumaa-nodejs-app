@@ -23,14 +23,21 @@ app.disable('x-powered-by');
 
 app.use(helmet());
 
+// Log what CORS_ORIGINS actually parsed to at boot, since production reads
+// this straight from host-injected env vars (see config/index.ts) - if the
+// platform UI value differs from what you expect, it'll show up here.
+logger.info('CORS allowed origins', { origins: config.cors.origins });
+
 // Only allow our own React site(s) to call the API, with cookies enabled.
 const corsOptions: cors.CorsOptions = {
   origin(origin, callback) {
+    const allowed = !origin || matchesKnownOrigin(origin);
+    logger.info('CORS check', { origin: origin ?? '(none)', allowed });
     // Passing `false` (not an Error) just omits the Access-Control-Allow-*
     // headers, so browsers block reading the response - it still lets the
     // request reach route-level checks like requireKnownOrigin, which give
     // non-browser callers (curl/Postman) a clean 403 instead of a 500.
-    callback(null, !origin || matchesKnownOrigin(origin));
+    callback(null, allowed);
   },
   credentials: true,
   methods: ['GET', 'POST', 'OPTIONS'],
