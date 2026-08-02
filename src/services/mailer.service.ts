@@ -18,12 +18,19 @@ type ZeptoRecipient = {
   email_address: MailAddress;
 };
 
+type ZeptoAttachment = {
+  name: string;
+  mime_type?: string;
+  content: string;
+};
+
 type ZeptoPayload = {
   from: MailAddress;
   to: ZeptoRecipient[];
   subject?: string;
   htmlbody?: string;
   textbody?: string;
+  attachments?: ZeptoAttachment[];
 };
 
 function parseAddress(address: string | MailAddress): MailAddress {
@@ -77,6 +84,24 @@ function getZeptoClient(): ZeptoClient {
   return zeptoClient;
 }
 
+function toZeptoAttachments(attachments?: SendMailOptions['attachments']): ZeptoAttachment[] | undefined {
+  if (!attachments || attachments.length === 0) return undefined;
+
+  return attachments
+    .filter((attachment) => Buffer.isBuffer(attachment.content) || typeof attachment.content === 'string')
+    .map((attachment) => {
+      const content = Buffer.isBuffer(attachment.content)
+        ? attachment.content.toString('base64')
+        : Buffer.from(attachment.content as string, attachment.encoding as BufferEncoding).toString('base64');
+
+      return {
+        name: String(attachment.filename ?? 'attachment'),
+        mime_type: attachment.contentType,
+        content,
+      };
+    });
+}
+
 function toZeptoPayload(message: SendMailOptions): ZeptoPayload {
   const from = parseAddress(message.from as string | MailAddress);
   const htmlbody = typeof message.html === 'string' ? message.html : undefined;
@@ -91,6 +116,7 @@ function toZeptoPayload(message: SendMailOptions): ZeptoPayload {
     subject: typeof message.subject === 'string' ? message.subject : undefined,
     htmlbody,
     textbody,
+    attachments: toZeptoAttachments(message.attachments),
   };
 }
 
