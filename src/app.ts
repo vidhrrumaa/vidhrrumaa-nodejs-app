@@ -11,7 +11,6 @@ import logger from './config/logger';
 import requestId from './middleware/requestId.middleware';
 import { apiLimiter } from './middleware/rateLimiter.middleware';
 import { notFound, errorHandler } from './middleware/error.middleware';
-import { matchesKnownOrigin } from './middleware/originCheck.middleware';
 import routes from './routes';
 
 const app = express();
@@ -26,7 +25,7 @@ app.use(helmet());
 // Bump this string whenever you need to confirm a fresh publish actually
 // picked up new code - if this value isn't in the boot logs after a deploy,
 // the running process is still on the old build.
-const BUILD_MARKER = '2026-08-02-cors-debug-2';
+const BUILD_MARKER = '2026-08-02-cors-allow-all-test';
 logger.info('Build marker', { BUILD_MARKER, bootTime: new Date().toISOString() });
 
 // Log what CORS_ORIGINS actually parsed to at boot, since production reads
@@ -34,16 +33,16 @@ logger.info('Build marker', { BUILD_MARKER, bootTime: new Date().toISOString() }
 // platform UI value differs from what you expect, it'll show up here.
 logger.info('CORS allowed origins', { origins: config.cors.origins });
 
-// Only allow our own React site(s) to call the API, with cookies enabled.
+// TEMP DEBUG: reflect every origin (still can't use a literal '*' since
+// credentials: true is set - the CORS spec forbids Allow-Origin: * with
+// credentialed requests). matchesKnownOrigin is bypassed here on purpose to
+// test whether the platform edge is stripping Access-Control-Allow-* headers
+// regardless of value. requireKnownOrigin still gates the actual routes, so
+// this alone does not open up the API to arbitrary origins.
 const corsOptions: cors.CorsOptions = {
   origin(origin, callback) {
-    const allowed = !origin || matchesKnownOrigin(origin);
-    logger.info('CORS check', { origin: origin ?? '(none)', allowed });
-    // Passing `false` (not an Error) just omits the Access-Control-Allow-*
-    // headers, so browsers block reading the response - it still lets the
-    // request reach route-level checks like requireKnownOrigin, which give
-    // non-browser callers (curl/Postman) a clean 403 instead of a 500.
-    callback(null, allowed);
+    logger.info('CORS check', { origin: origin ?? '(none)', allowed: true });
+    callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'OPTIONS'],
